@@ -1,0 +1,42 @@
+#lang racket
+(require racket/string)
+(define (string-repeat str n)
+  (if (= n 1)
+      str
+      (string-append str (string-repeat str (- n 1)))))
+
+
+(define (fence n)
+  (define count (round (+ 1 (log n))))
+  (string-append "{" (string-repeat "-" count) ">" (number->string n) "<" (string-repeat "-" count) "}"))
+
+(define (string-reverse str)
+  (define length (- (string-length str) 1))
+  (define (str-iter str i str-rev)
+  (if (= i 0)
+      (string-append str-rev (~a (string-ref str 0)))
+      (string-append str-rev (~a (string-ref str i)) (str-iter str (- i 1) str-rev))))
+    (str-iter str length ""))
+
+(define (to-binary-string n)
+  (define str "")
+  (define (helper n str)
+    (if (<= n 1)
+        (string-append str(~a n))
+        (if (= (remainder n 2) 0)
+            (helper (quotient n 2) (string-append str (~a 0)))
+            (helper (quotient n 2) (string-append str (~a 1))))))
+  (string-reverse (helper n "")))
+  
+(define (from-binary-string str)
+  (define length (string-length str))
+  (define number (string->number str))
+  (define (binary-iter number i result)
+    (if (= i 0)
+        (if (= (remainder number 10) 0)
+            (binary-iter (quotient number 10) (+ i 1) 0)
+            (binary-iter (quotient number 10) (+ i 1) 1))
+        (if (< i length)
+            (binary-iter (quotient number 10) (+ i 1) (+ result (* (expt 2 i) (remainder number 10))))
+            result)))
+  (binary-iter number 0 0))
