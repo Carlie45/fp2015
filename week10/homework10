@@ -1,0 +1,56 @@
+isPrime :: Int -> Bool
+isPrime n
+    | n <= 1 = False
+    | otherwise = isPrime' 2 n
+        where
+            isPrime' current n
+                | current == n = True
+                | mod n current == 0 = False
+                | otherwise = isPrime' (current + 1) n
+
+truncatablePrime :: Int -> Bool
+truncatablePrime n
+	| n < 10 && isPrime n = True
+	| isPrime n = truncatablePrime (div n 10)
+	| otherwise = False
+	
+contain :: Int -> Int -> Bool
+contain x k
+	| x == k = True
+	| x < 10 && x /= k = False
+	| mod x 10 == k = True
+	| mod x 10 /= k = contain (div x 10) k
+	| otherwise = False
+	
+containsDigits :: Int -> Int -> Bool
+containsDigits x y
+	| y < 10 = contain x y
+	| contain x (mod y 10) && containsDigits x (div y 10) = True
+	| (not (contain x (mod y 10))) && (not (containsDigits x (div y 10))) = False
+	| otherwise = False
+	
+productOfDigits :: Int -> Int
+productOfDigits x
+	| x < 10 = x
+	| otherwise = (mod x 10) * (productOfDigits (div x 10))
+	
+	
+sumDivisors :: Int -> Int -> Int
+sumDivisors n k
+	| k >= n = 0
+	| (mod n k) == 0 = k + (sumDivisors n (k + 1))
+	| (mod n k) /= 0 = sumDivisors n (k + 1)
+	
+interestingNumber :: Int -> Bool
+interestingNumber n
+	| n == (sumDivisors (sumDivisors n 1) 1) = True
+	| otherwise = False
+	
+quadrant :: Double -> Double -> Int
+quadrant x y
+	| x == 0 && y == 0 = 0
+	| x > 0 && y > 0 = 1
+	| x < 0 && y > 0 = 2
+	| x < 0 && y < 0 = 3
+	| x > 0 && y < 0 = 4
+	
