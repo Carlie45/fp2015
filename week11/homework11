@@ -1,0 +1,25 @@
+listToNumber :: [Int] -> Int
+listToNumber [] = 0
+listToNumber (x:xs) = x * 10 ^ (length xs) + (listToNumber xs)
+
+suffix :: (Eq a) => [a] -> [a] -> Bool
+suffix [] _ = True
+suffix _ [] = False
+suffix l1 l2 = (last l1 == last l2) && (suffix (init l1) (init l2))
+
+occurrences :: [Int] -> [Int] -> [Int]
+occurrences [] _ = []
+occurrences _ [] = [0]
+occurrences (x:xs) (y:ys) = (count x (y:ys)) : (occurrences xs (y:ys))
+	where
+		count p (q:qs)
+			| p /= q && qs == [] = 0
+			| p == q && qs == [] = 1
+			| p == q = 1 + (count p qs)
+			| p /= q = count p qs
+			
+removeAt :: Int -> [a] -> [a]
+removeAt index list
+	| index < 0 = error "Index out of bounds!"
+	| index > length list = error "Index out of bounds"
+	| otherwise = (take index list) ++ (drop (index + 1) list) 
