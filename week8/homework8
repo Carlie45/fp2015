@@ -1,0 +1,122 @@
+#lang racket
+
+(define (number-of-divisors n divisor count)
+  (if (= n divisor)
+      (+ count 1)
+      (if (= (remainder n divisor) 0)
+          (number-of-divisors n (+ divisor 1) (+ count 1))
+          (number-of-divisors n (+ divisor 1) count))))
+
+(define (prime? n)
+  (if (<= n 0)
+      "Bad input!"
+      (if (> (number-of-divisors n 1 0) 2)
+          #f
+          #t)))
+
+(define (erase-last-digit x)
+  (cond
+    [(< x 10) 0]
+    [else (quotient x 10)]))
+
+(define (truncatable-prime? x)
+  (cond
+    [(< x 10) (prime? x)]
+    [else (and (prime? x) (truncatable-prime? (erase-last-digit x)))]))
+
+(define (where list-elements list-predicates)
+  (cond
+    [(empty? list-elements) (list)]
+    [(empty? list-predicates) list-elements]
+    [else (where (filter (car list-predicates) list-elements) (cdr list-predicates))]))
+
+(define (list-set list index new-value) ; Working 100%
+  (define (iter list new-list index current-i new-value)
+    (cond
+      [(empty? list) (list)]
+      [(= current-i (length list)) (reverse (list (new-value (cdr (reverse list)))))]
+      [(= current-i index) (append new-list (cons new-value '())
+                                  (cdr list) )]
+      [else (iter (cdr list)
+                  (append new-list (cons (car list) '()))
+                  index
+                  (+ current-i 1)
+                  new-value)]))
+  (iter list '() index 0 new-value))
+
+(define (make-zero-column index matrix) ; Допускаме, че индексът е коректен
+  (cond
+    [(empty? matrix) (list)]
+    [else (cons (list-set (car matrix) index 0) (make-zero-column index (cdr matrix)))]))
+
+(define (find-zero-index list)
+  (define (iter list i size)
+    (cond
+      [(= i size) #f]
+      [(and (< i size) (= (list-ref list i) 0)) i]
+      [else (iter list (+ i 1) size)]))
+  (iter list 0 (length list)))
+
+(define (zero1 matrix) ; Not working for columns
+   (cond
+      [(empty? matrix) (list)]
+      [(find-zero-index (car matrix))
+       (zero1 (make-zero-column (find-zero-index (car matrix)) matrix))]
+      [else (cons (car matrix) (zero1 (cdr matrix)))]))
+
+(define (is-there-zero? items)
+  (cond
+    [(empty? items) #f]
+    [(= (car items) 0) #t]
+    [else (is-there-zero? (cdr items))]))
+
+(define (zero matrix) ;Makes zero row of a matrix, if there is a zero on the row
+  (define (iter current matrix)
+  (cond
+    [(empty? matrix) (list)]
+    [(is-there-zero? (car matrix))
+     (cons (make-list (length (car matrix)) '0) (iter (+ current 1) (cdr matrix)))]
+    [else (cons (car matrix) (iter (+ current 1) (cdr matrix)))]))
+  (iter 0 matrix))
+
+(define (sum-divisors n)
+  (define (sum-divisors n k sum)
+    (cond
+      [(>= k n) sum]
+      [(= (remainder n k) 0) (sum-divisors n (+ k 1) (+ sum k))]
+      [else (sum-divisors n (+ k 1) sum)]))
+  (sum-divisors n 1 0))
+
+(define (is-interesting? n)
+  (cond
+    [(= n (sum-divisors (sum-divisors n))) #t]
+    [else #f]))
+  
+(define (sum-interesting k)
+  (define (iter start k sum)
+    (cond
+      [(= start k) sum]
+      [(is-interesting? start) (iter (+ start 1) k (+ sum start))]
+      [else (iter (+ start 1) k sum)]))
+  (iter 1 k 0))
+
+(define (has-zero? n)
+  (cond
+    [(= n 0) #t]
+    [(< n 10) #f]
+    [(and (> n 10) (= (remainder n 10) 0)) #t]
+    [else (has-zero? (quotient n 10))]))
+
+(define (sum-digits n)
+  (cond
+    [(< n 10) n]
+    [else (+ (remainder n 10) (sum-digits (quotient n 10)))]))
+
+(define (digits-sum n) ; Нещо не работи
+  (define (iter number sum)
+    {cond
+      [(= number 1111) sum]
+      [(and (= (sum-digits number) n) (not (has-zero? number)))
+       (iter (+ number 1) (+ sum number))]
+      [else (iter (+ number 1) sum)]})
+  (iter 1 0))
