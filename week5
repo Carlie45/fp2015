@@ -1,0 +1,101 @@
+#lang racket
+
+(define (sum members)
+  (define (sum-iter sum-list members)
+    (cond
+      [(= (length members) 0) sum-list]
+      [else (sum-iter (+ sum-list (car members)) (cdr members))]))
+  (sum-iter 0 members))
+
+(define (member? x items)
+  (cond
+    [(= (length items) 0) #f]
+    [else
+     (if (equal? x (car items))
+         #t
+         (member? x (cdr items)))]))
+
+(define (range2 a b)
+  (cond
+    [(>= a b) '()]
+    [(< a b) (cons a (range2 (+ a 1) b))]))
+
+(define (length2 items)
+  (define (length-iter items count)
+    (cond
+      [(null? items) count]
+      [else (length-iter (cdr items) (+ count 1))]))
+  (length-iter items 0))
+
+(define (list-ref2 items n)
+  (define (list-ref-iter items n index)
+            (cond
+              [(< index n) (list-ref-iter (cdr items) n (+ index 1))]
+              [else (car items)]))
+  (list-ref-iter items n 0))
+
+(define (build-list2 n f)
+  (append2 n f))
+
+(define (append2 l1 l2)
+  (cond
+    [(> (length l1) 0) (cons (car l1) (append2 (cdr l1) l2))]
+    [(and (= (length l1) 0) (> (length l2) 0)) l2]))
+
+(define (reverse2 items)
+  (cond
+    [(= (length items) 0) '()]
+    [else (append2 (reverse2 (cdr items)) (cons (car items) (list)))]))
+
+(define (take2 n items)
+  (define (take-iter index list)
+  (if (= n (length items))
+      items
+      (if (= index n)
+          list
+          (cons (list-ref2 items index) (take-iter (+ index 1) list)))))
+     (take-iter 0 '()))
+
+(define (drop2 n items)
+  (define (drop-iter index)
+    (if (> n (length items))
+        '()
+        (cond
+          [(<= index n) (drop-iter (+ index 1))]
+          [(and (> index n) (< index (length items))) (cons (list-ref2 items (- index 1)) (drop-iter (+ index 1)))]
+          [(= index (length items)) (cons (list-ref2 items (- index 1)) '())])))
+  (drop-iter 1))
+
+(define (take-while p items)
+  (if (empty? items)
+      '()
+      (if (p (car items))
+      (cons (car items) (take-while p (cdr items)))
+      '())))
+
+(define (drop-while p items)
+  (if (empty? items)
+      '()
+      (cond
+        [(p (car items)) (drop-while p (cdr items))]
+        [else items])))
+
+(define (reverse-int n)
+  (define (rev-iter n result)
+    (cond [(= n 0) result]
+          [else (rev-iter (quotient n 10) (+ (* result 10) (remainder n 10)))]))
+  (rev-iter n 0))
+
+(define (number->list n)
+  (define (helper modified)
+  (cond
+    [(< modified 10) (cons modified '())]
+    [else (cons (remainder modified 10) (helper (quotient modified 10)))]))
+  (helper (reverse-int n)))
+
+(define (list->number ns)
+  (define (helper ns power)
+    (cond
+      [(> (length ns) 0) (+ (* (car ns) (expt 10 power)) (helper (cdr ns) (- power 1)))]
+      [else 0]))
+  (helper ns (- (length ns) 1)))
