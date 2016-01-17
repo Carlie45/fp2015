@@ -1,0 +1,59 @@
+#lang racket
+
+(define (list-ref2 items n)
+  (define (list-ref-iter items n index)
+            (cond
+              [(< index n) (list-ref-iter (cdr items) n (+ index 1))]
+              [else (car items)]))
+  (list-ref-iter items n 0))
+
+(define (drop2 n items)
+  (define (drop-iter index)
+    (if (> n (length items))
+        '()
+        (cond
+          [(<= index n) (drop-iter (+ index 1))]
+          [(and (> index n) (< index (length items))) (cons (list-ref2 items (- index 1)) (drop-iter (+ index 1)))]
+          [(= index (length items)) (cons (list-ref2 items (- index 1)) '())])))
+  (drop-iter 1))
+
+(define (take-while p items)
+  (if (empty? items)
+      '()
+      (if (p (car items))
+      (cons (car items) (take-while p (cdr items)))
+      '())))
+
+(define (drop-while p items)
+  (if (empty? items)
+      '()
+      (cond
+        [(p (car items)) (drop-while p (cdr items))]
+        [else items])))
+
+(define (group l)
+  (cond
+    [(empty? l) (list)]
+    [else (cons (append (list (car l))(take-while (lambda (x) (equal? x (car l))) (cdr l)))
+                 (group (drop-while (lambda (x) (equal? x (car l))) (cdr l)) ))]))
+
+(define (string-list str)
+         (cond
+           [(empty? (group (string->list str))) '()]
+           [else (group (map ~a (string->list str)))]))
+
+(define (run-length-encode str)
+  (define (helper new-string str)
+      (cond
+        [(empty? (string-list str)) ""]
+        [else (string-append (string-append
+                              new-string
+                             (if (= (length (car (string-list str))) 1)
+                                                           ""
+                                                           (~a (length (car (string-list str)))))
+                             (car (car (string-list str))))
+                             (helper new-string (substring str (length (car (string-list str))))))]))
+    (helper "" str))
+
+
+     
