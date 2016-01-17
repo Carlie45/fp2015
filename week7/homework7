@@ -1,0 +1,100 @@
+#lang racket
+
+(define (make-tree node left right)
+  (list node left right))
+
+(define (make-leaf node)
+  (make-tree node '() '()))
+
+(define (left tree)
+  (first (rest tree)))
+
+(define (right tree)
+  (first (rest (rest tree))))
+
+(define (height tree)
+  (cond
+    [(empty? tree) 0]
+    [else (+ 1 (max (height (left tree)) (height (right tree))))]))
+
+(define t
+  (make-tree 1
+    (make-tree 2
+      (make-leaf 5)
+      (make-leaf 6))
+    (make-leaf 3)))
+
+(define (tree-level level tree)
+  (cond
+    [(empty? tree) (list)]
+    [(= level 1) (cons (car tree) '())]
+    [else (append (tree-level (- level 1) (left tree)) (tree-level (- level 1) (right tree)))]))
+
+(define (tree-levels tree)
+  (define (iter tree level)
+    (cond
+      [(= level (height tree)) (cons (tree-level (height tree) tree) '())]
+      [else (cons (tree-level level tree) (iter tree (+ level 1)))]))
+  (iter tree 1))
+
+(define (add1 x)
+  (+ x 1))
+
+(define (tree-map f tree)
+  (cond
+    [(empty? tree) (list)]
+    [else (list (f (car tree)) (tree-map f (left tree)) (tree-map f (right tree)))]))
+
+(define (bst-insert x tree)
+  (cond
+    [(empty? tree) (make-leaf x)]
+    [(< x (car tree)) (make-tree (car tree) (bst-insert x (left tree)) (right tree))]
+    [else (make-tree (car tree) (left tree) (bst-insert x (right tree)))]))
+
+(define bin-tree
+  (make-tree 6
+             (make-tree 3
+                        (make-leaf 2)
+                        (make-leaf 4))
+             (make-tree 7
+                        (make-leaf 5)
+                        (make-tree 8
+                                   (make-leaf 7)
+                                   (make-leaf 9)))))
+
+(define (bst-element? x tree)
+  (cond
+    [(empty? tree) #f]
+    [(= x (car tree)) #t]
+    [(< x (car tree)) (bst-element? x (left tree))]
+    [(> x (car tree)) (bst-element? x (right tree))]))
+
+(define (atom? x)
+  (not (or
+        (pair? x)
+        (null? x)
+        (vector? x))))
+
+(define (flatten l)
+  (cond
+    [(null? l) (list)]
+    [(atom? (first l)) (cons (first l) (flatten (rest l)))]
+    [else (append (flatten (first l)) (flatten (rest l)))]))
+
+(define (bst->list tree)
+  (cond
+    [(empty? tree) (list)]
+    [(atom? (car tree)) (sort (append (cons (car tree) '()) (bst->list (cdr tree))) <)]
+    [else (sort (append (flatten (car tree)) (flatten (cdr tree))) <)]))
+
+(define (bst? tree)
+  (define (iter left-tree  right-tree count)
+  (cond
+    [(= count 1) #t]
+    [(empty? tree) #f]
+    [(and (and (not (null? (left tree))) (< (car (left tree)) (car tree)))
+          (and (not (null? (right tree))) (> (car (right tree)) (car tree))))
+     (iter (left tree) (right tree) (- count 1))]
+    [else #f]))
+  (iter tree tree (height tree)))
+    
